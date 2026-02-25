@@ -154,5 +154,15 @@ class VictoryView(arcade.View):
         self.window.show_view(MenuView())
 
 
-class GameView():
-    pass
+class GameView(arcade.View):
+    def __init__(self):
+        super().__init__()
+        # настройки по умолчанию
+        self.difficulty_preset = constants.DIFFICULTY_SETTINGS["MEDIUM"]
+        self.player_skin = "player.png"
+
+        self.scene = None
+        self.player = None
+        self.physics_engine = None
+        self.camera = None
+        self.gui_camera = None
