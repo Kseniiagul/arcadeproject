@@ -90,3 +90,58 @@ class SkinSelectionView(arcade.View):
 
 def DifficultyView():
     pass
+
+
+class DifficultyView(arcade.View):
+    def __init__(self):
+        super().__init__()
+        self.selected_skin = "player.png"
+
+    def on_show_view(self):
+        arcade.set_background_color(arcade.color.DARK_BLUE_GRAY)
+
+    def on_draw(self):
+        self.clear()
+        arcade.draw_text("СЛОЖНОСТЬ", constants.SCREEN_WIDTH / 2, constants.SCREEN_HEIGHT / 2 + 100,
+                         arcade.color.WHITE, 40, anchor_x="center", bold=True)
+
+        arcade.draw_text("1 - ЛЕГКО", constants.SCREEN_WIDTH / 2, constants.SCREEN_HEIGHT / 2 - 30,
+                         constants.DIFFICULTY_SETTINGS["EASY"]["COLOR"], 18, anchor_x="center")
+        arcade.draw_text("2 - НОРМАЛЬНО", constants.SCREEN_WIDTH / 2, constants.SCREEN_HEIGHT / 2 - 70,
+                         constants.DIFFICULTY_SETTINGS["MEDIUM"]["COLOR"], 18, anchor_x="center")
+        arcade.draw_text("3 - СЛОЖНО", constants.SCREEN_WIDTH / 2, constants.SCREEN_HEIGHT / 2 - 110,
+                         constants.DIFFICULTY_SETTINGS["HARD"]["COLOR"], 18, anchor_x="center")
+
+    def on_key_press(self, key, modifiers):
+        if key == arcade.key.KEY_1 or key == arcade.key.NUM_1:
+            self.start_game("EASY")
+        elif key == arcade.key.KEY_2 or key == arcade.key.NUM_2:
+            self.start_game("MEDIUM")
+        elif key == arcade.key.KEY_3 or key == arcade.key.NUM_3:
+            self.start_game("HARD")
+
+    def start_game(self, difficulty_key):
+        game_view = GameView()
+        game_view.difficulty_preset = constants.DIFFICULTY_SETTINGS[difficulty_key]
+        game_view.player_skin = self.selected_skin
+        game_view.setup()
+        self.window.show_view(game_view)
+
+
+class GameOverView(arcade.View):
+    def on_show_view(self):
+        arcade.set_background_color(arcade.color.BLACK)
+
+    def on_draw(self):
+        self.clear()
+        arcade.draw_text("ТЫ РАСТАЯЛ...", constants.SCREEN_WIDTH / 2, constants.SCREEN_HEIGHT / 2, arcade.color.RED, 50,
+                         anchor_x="center")
+        arcade.draw_text("Клик для меню", constants.SCREEN_WIDTH / 2, constants.SCREEN_HEIGHT / 2 - 50,
+                         arcade.color.WHITE, 20, anchor_x="center")
+
+    def on_mouse_press(self, _x, _y, _button, _modifiers):
+        self.window.show_view(MenuView())
+
+
+class GameView():
+    pass
