@@ -1,6 +1,8 @@
 import arcade
 from src import constants
 import arcade.gui
+import random
+from src.player import IceCube
 
 
 class MenuView(arcade.View):
@@ -166,3 +168,125 @@ class GameView(arcade.View):
         self.physics_engine = None
         self.camera = None
         self.gui_camera = None
+
+    def setup(self):
+        self.scene = arcade.Scene()
+        self.camera = arcade.camera.Camera2D()
+        self.gui_camera = arcade.camera.Camera2D()
+        fire_chance = self.difficulty_preset["FIRE_CHANCE"]
+        safe_size = self.difficulty_preset["SAFE_ZONE"]
+        MAX_JUMP_HEIGHT = 150
+        MAX_JUMP_DISTANCE = 250
+        self.player = IceCube(self.player_skin)
+        self.player.setup_difficulty(self.difficulty_preset)
+        self.scene.add_sprite("Player", self.player)
+        platform_path = "assets/images/ground.png"
+        light_path = "assets/images/light.png"
+        fire_path = "assets/images/fire.png"
+        fridge_path = "assets/images/fridge.png"
+        try:
+            texture = arcade.load_texture(platform_path)
+            tile_width = texture.width * constants.TILE_SCALING
+            tile_height = texture.height * constants.TILE_SCALING
+        except:
+            texture = arcade.make_soft_square_texture(50, arcade.color.GRAY)
+            tile_width = 50 * constants.TILE_SCALING
+            tile_height = 50 * constants.TILE_SCALING
+        floor_y = tile_height / 2
+        floor_top = tile_height
+        step = tile_width - constants.TILE_OVERLAP
+        if step < 1: 
+            step = 1
+        num_tiles = int((constants.GOAL_X + 400) / step)
+        safe_counter = 400
+
+        for i in range(num_tiles):
+            current_x = i * step + (tile_width / 2)
+            wall = arcade.Sprite(scale=constants.TILE_SCALING)
+            wall.texture = texture
+            wall.center_x = current_x
+            wall.center_y = floor_y
+            self.scene.add_sprite("Walls", wall)
+            if safe_counter > 0:
+                safe_counter -= step
+                continue
+            if current_x < constants.GOAL_X - 300 and random.random() < fire_chance:
+                try:
+                    fire = arcade.Sprite(fire_path, constants.FIRE_SCALING)
+                except:
+                    fire = arcade.SpriteSolidColor(40, 40, arcade.color.RED)
+                fire.center_x = current_x
+                fire.bottom = floor_top
+                self.scene.add_sprite("Traps", fire)
+                safe_counter = safe_size
+            elif random.random() < 0.05:
+                try:
+                    light = arcade.Sprite(light_path, constants.LIGHT_SCALING)
+                except:
+                    light = arcade.SpriteCircle(15, arcade.color.YELLOW)
+                light.center_x = current_x
+                light.bottom = floor_top + 10
+                self.scene.add_sprite("Coins", light)
+                safe_counter = 50
+
+        platform_x = 400
+        platform_y = floor_top
+        player_height = 64 * constants.PLAYER_SCALE
+        req_gap = player_height + 30
+
+        while platform_x < constants.GOAL_X - 300:
+            min_gap = tile_width + 20
+            max_gap = MAX_JUMP_DISTANCE
+            gap = random.randrange(int(min_gap), int(max_gap))
+            new_x = platform_x + gap
+            min_y = floor_top + 110
+            max_y_reach = platform_y + MAX_JUMP_HEIGHT
+            max_y_abs = 500
+            real_max_y = min(max_y_reach, max_y_abs)
+            if real_max_y < min_y:
+                new_y = min_y
+            else:
+                new_y = random.randrange(int(min_y), int(real_max_y))
+            platform = arcade.Sprite(scale=constants.TILE_SCALING)
+            platform.texture = texture
+            platform.center_x = new_x
+            platform.center_y = new_y
+            self.scene.add_sprite("Walls", platform)
+            is_fire_below = False
+            if "Traps" in self.scene:
+                for trap in self.scene["Traps"]:
+                    if abs(trap.center_x - new_x) < tile_width:
+                        is_fire_below = True
+                        break
+            gap = (new_y - tile_height / 2) - floor_top
+            pass_under = gap > req_gap
+            trap_prob = fire_chance + 0.1
+            if (not is_fire_below) and pass_under and (random.random() < trap_prob):
+                try:
+                    item = arcade.Sprite(fire_path, constants.FIRE_SCALING)
+                    layer = "Traps"
+                except:
+                    item = arcade.SpriteSolidColor(32, 32, arcade.color.RED)
+                    layer = "Traps"
+            else:
+                try:
+                    item = arcade.Sprite(light_path, constants.LIGHT_SCALING)
+                    layer = "Coins"
+                except:
+                    item = arcade.SpriteCircle(15, arcade.color.YELLOW)
+                    layer = "Coins"
+            item.center_x = new_x
+            item.bottom = new_y + (tile_height / 2) + 5
+            self.scene.add_sprite(layer, item)
+            platform_x = new_x
+            platform_y = new_y
+
+        try:
+            self.goal = arcade.Sprite(fridge_path, constants.FRIDGE_SCALING)
+        except:
+            self.goal = arcade.SpriteSolidColor(50, 80, arcade.color.GREEN)
+        self.goal.center_x = constants.GOAL_X
+        self.goal.bottom = floor_top
+        self.scene.add_sprite("Goal", self.goal)
+        self.physics_engine = arcade.PhysicsEnginePlatformer(self.player, gravity_constant=constants.GRAVITY, walls=self.scene["Walls"])
+        arcade.set_background_color(constants.BG_COLOR)
