@@ -21,18 +21,18 @@ class MenuView(arcade.View):
 
 
 class SkinSelectionView(arcade.View):
-        def __init__(self):
+    def __init__(self):
         super().__init__()
         self.selected_index = 0
         self.skins = constants.AVAILABLE_SKINS
         self.ui_sprites = arcade.SpriteList()
-
+    
         self.preview_sprite = arcade.Sprite()
         self.preview_sprite.center_x = constants.SCREEN_WIDTH / 2
         self.preview_sprite.center_y = constants.SCREEN_HEIGHT / 2 + 80
-
+    
         self.ui_sprites.append(self.preview_sprite)
-
+    
         self.update_preview()
 
     def update_preview(self):
@@ -88,10 +88,6 @@ class SkinSelectionView(arcade.View):
             self.window.show_view(diff_view)
 
 
-def DifficultyView():
-    pass
-
-
 class DifficultyView(arcade.View):
     def __init__(self):
         super().__init__()
@@ -135,6 +131,21 @@ class GameOverView(arcade.View):
     def on_draw(self):
         self.clear()
         arcade.draw_text("ТЫ РАСТАЯЛ...", constants.SCREEN_WIDTH / 2, constants.SCREEN_HEIGHT / 2, arcade.color.RED, 50,
+                         anchor_x="center")
+        arcade.draw_text("Клик для меню", constants.SCREEN_WIDTH / 2, constants.SCREEN_HEIGHT / 2 - 50,
+                         arcade.color.WHITE, 20, anchor_x="center")
+
+    def on_mouse_press(self, _x, _y, _button, _modifiers):
+        self.window.show_view(MenuView())
+
+
+class VictoryView(arcade.View):
+    def on_show_view(self):
+        arcade.set_background_color(arcade.color.FOREST_GREEN)
+
+    def on_draw(self):
+        self.clear()
+        arcade.draw_text("ПОБЕДА!", constants.SCREEN_WIDTH / 2, constants.SCREEN_HEIGHT / 2, arcade.color.GOLD, 50,
                          anchor_x="center")
         arcade.draw_text("Клик для меню", constants.SCREEN_WIDTH / 2, constants.SCREEN_HEIGHT / 2 - 50,
                          arcade.color.WHITE, 20, anchor_x="center")
