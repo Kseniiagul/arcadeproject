@@ -3,6 +3,7 @@ from src import constants
 import arcade.gui
 import random
 from src.player import IceCube
+import math
 
 
 class MenuView(arcade.View):
