@@ -290,3 +290,44 @@ class GameView(arcade.View):
         self.scene.add_sprite("Goal", self.goal)
         self.physics_engine = arcade.PhysicsEnginePlatformer(self.player, gravity_constant=constants.GRAVITY, walls=self.scene["Walls"])
         arcade.set_background_color(constants.BG_COLOR)
+
+    def on_draw(self):
+        self.clear()
+        self.camera.use()
+        self.scene.draw()
+
+        self.gui_camera.use()
+
+        current_size = self.player.scale[0]
+
+        life_percent = int((current_size / self.player.start_scale) * 100)
+
+        if life_percent < 0: life_percent = 0
+
+        arcade.draw_text(
+            f"Life: {life_percent}%",
+            10, constants.SCREEN_HEIGHT - 30,
+            arcade.color.WHITE, 16, bold=True
+        )
+
+        arcade.draw_text(
+            f"Mode: {self.difficulty_preset['LABEL']}",
+            constants.SCREEN_WIDTH - 150, constants.SCREEN_HEIGHT - 30,
+            self.difficulty_preset['COLOR'], 14, bold=True
+        )
+
+    def on_key_press(self, key, modifiers):
+        if key in [arcade.key.UP, arcade.key.W, arcade.key.SPACE] and self.physics_engine.can_jump():
+            self.player.change_y = constants.PLAYER_JUMP_SPEED
+        elif key in [arcade.key.LEFT, arcade.key.A]:
+            self.player.change_x = -constants.PLAYER_SPEED
+        elif key in [arcade.key.RIGHT, arcade.key.D]:
+            self.player.change_x = constants.PLAYER_SPEED
+
+    def on_key_release(self, key, modifiers):
+        if key in [arcade.key.LEFT, arcade.key.A, arcade.key.RIGHT, arcade.key.D]:
+            self.player.change_x = 0
+
+
+
+
