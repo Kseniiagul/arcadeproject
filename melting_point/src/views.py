@@ -291,6 +291,47 @@ class GameView(arcade.View):
         self.physics_engine = arcade.PhysicsEnginePlatformer(self.player, gravity_constant=constants.GRAVITY, walls=self.scene["Walls"])
         arcade.set_background_color(constants.BG_COLOR)
 
+    def on_update(self, delta_time):
+        self.physics_engine.update()
+        self.scene.update(delta_time=delta_time)
+        time = self.window.time
+
+        if "Coins" in self.scene:
+            for light in self.scene["Coins"]:
+                base = constants.LIGHT_SCALING
+                if isinstance(light, arcade.SpriteCircle):
+                    base = 1.0
+                light.scale = base + (math.sin(time * 5) * 0.1)
+
+        screen_x = self.player.center_x - (self.window.width / 2)
+        if screen_x < 0:
+            screen_x = 0
+        self.camera.bottom_left = (screen_x, 0)
+
+        if self.player.scale[0] < self.player.death_scale:
+            view = GameOverView()
+            self.window.show_view(view)
+
+        if "Coins" in self.scene:
+            hit_list = arcade.check_for_collision_with_list(self.player, self.scene["Coins"])
+            for light in hit_list:
+                light.remove_from_sprite_lists()
+                self.player.heal()
+
+        if "Traps" in self.scene:
+            fire_hit_list = arcade.check_for_collision_with_list(self.player, self.scene["Traps"])
+            if fire_hit_list:
+                current_width = self.player.scale[0]
+                damage = self.difficulty_preset["FIRE_DAMAGE"]
+                new_size = current_width - damage
+                if new_size < 0:
+                    new_size = 0
+                self.player.scale = new_size
+
+        if arcade.check_for_collision(self.player, self.goal):
+            view = VictoryView()
+            self.window.show_view(view)
+
     def on_draw(self):
         self.clear()
         self.camera.use()
