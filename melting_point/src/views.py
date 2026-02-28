@@ -17,7 +17,7 @@ class MenuView(arcade.View):
         arcade.draw_text("Нажми ENTER, чтобы начать", constants.SCREEN_WIDTH / 2, constants.SCREEN_HEIGHT / 2 - 50,
                          arcade.color.LIGHT_BLUE, font_size=20, anchor_x="center")
 
-    def on_key_press(self, key):
+    def on_key_press(self, key, modifiers):
         if key == arcade.key.ENTER:
             skin_view = SkinSelectionView()
             self.window.show_view(skin_view)
@@ -71,7 +71,7 @@ class SkinSelectionView(arcade.View):
         arcade.draw_text("ENTER - Подтвердить", constants.SCREEN_WIDTH / 2, constants.SCREEN_HEIGHT / 2 - 200,
                          arcade.color.GREEN, 15, anchor_x="center")
 
-    def on_key_press(self, key):
+    def on_key_press(self, key, modifiers):
         if key == arcade.key.RIGHT:
             self.selected_index += 1
             if self.selected_index >= len(self.skins):
